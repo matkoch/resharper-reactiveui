@@ -1,0 +1,3 @@
+rootProject.name = 'reactiveuianalyzer'
+
+include ':protocol'
