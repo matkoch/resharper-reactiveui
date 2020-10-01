@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Linq;
+using JetBrains.Annotations;
+using JetBrains.Metadata.Reader.API;
+using JetBrains.Metadata.Reader.Impl;
 using JetBrains.ReSharper.Feature.Services.Daemon;
 using JetBrains.ReSharper.Psi;
 using JetBrains.ReSharper.Psi.CSharp.Tree;
 using JetBrains.ReSharper.Psi.Tree;
+using JetBrains.ReSharper.TestRunner.Abstractions.Extensions;
 using JetBrains.Util;
 
 namespace ReSharperPlugin.ReactiveUIAnalyzer
@@ -27,22 +31,20 @@ namespace ReSharperPlugin.ReactiveUIAnalyzer
             if (method?.ShortName != "WhenAnyValue")
                 return;
 
+            var typeByClrName = TypeFactory.CreateTypeByCLRName("ReactiveUI.WhenAnyMixin", element.PsiModule);
+            if (method.GetContainingType()?.Equals(typeByClrName.GetTypeElement()) ?? true)
+                return;
+
             foreach (var argument in element.ArgumentsEnumerable)
             {
-                var lambdaExpression = argument.Expression as ILambdaExpression;
-                if (lambdaExpression == null)
-                    continue;
-
-                var referenceExpression = lambdaExpression.BodyExpression as IReferenceExpression;
-                if (referenceExpression == null)
-                    continue;
-
                 // A.B.C
-                // A.B <--
-                // A <--
-                var qualifierExpression = referenceExpression
-                    .TraverseAcross(x => x.QualifierExpression as IReferenceExpression)
+                //     -> A.B
+                //         -> A
+                var lambdaExpression = argument.Expression as ILambdaExpression;
+                var referenceExpression = lambdaExpression?.BodyExpression as IReferenceExpression;
+                var qualifierExpression = referenceExpression?.TraverseAcross(x => x.QualifierExpression as IReferenceExpression)
                     .Last();
+
                 // var qualifierExpression = referenceExpression.QualifierExpression as IReferenceExpression;
                 if (qualifierExpression == null)
                     continue;
@@ -50,13 +52,15 @@ namespace ReSharperPlugin.ReactiveUIAnalyzer
                 var parameter = lambdaExpression.ParameterDeclarations.FirstOrDefault();
                 if (parameter == null)
                     continue;
-                
+
                 if (parameter.NameIdentifier.Name == qualifierExpression.NameIdentifier.Name)
                     continue;
 
                 var field = qualifierExpression.Reference.Resolve().DeclaredElement as IField;
                 var type = field?.GetContainingType();
-                if (type?.GetClrName().FullName != (parameter.DeclaredElement.Type as IDeclaredType)?.GetClrName().FullName)
+
+                // if (type?.GetClrName().FullName != (parameter.DeclaredElement.Type as IDeclaredType)?.GetClrName().FullName)
+                if (!type?.Equals((parameter.DeclaredElement.Type as IDeclaredType)?.GetTypeElement()) ?? true)
                     continue;
 
                 consumer.AddHighlighting(new SampleHighlighting(lambdaExpression));
