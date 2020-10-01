@@ -6,16 +6,15 @@ using JetBrains.ReSharper.Psi.Tree;
 using JetBrains.Util;
 using ReSharperPlugin.ReactiveUIAnalyzer;
 
-[assembly: RegisterConfigurableSeverity(
-    SampleHighlighting.SeverityId,
-    CompoundItemName: null,
-    Group: HighlightingGroupIds.CodeSmell,
-    Title: SampleHighlighting.Message,
-    Description: SampleHighlighting.Description,
-    DefaultSeverity: Severity.WARNING)]
-
 namespace ReSharperPlugin.ReactiveUIAnalyzer
 {
+    [RegisterConfigurableSeverity(
+        SampleHighlighting.SeverityId,
+        CompoundItemName: null,
+        Group: HighlightingGroupIds.CodeSmell,
+        Title: Message,
+        Description: Description,
+        DefaultSeverity: Severity.WARNING)]
     [ConfigurableSeverityHighlighting(
         SeverityId,
         CSharpLanguage.Name,

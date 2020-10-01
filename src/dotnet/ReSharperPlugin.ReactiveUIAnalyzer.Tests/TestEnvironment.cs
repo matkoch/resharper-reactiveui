@@ -9,13 +9,13 @@ using NUnit.Framework;
 
 namespace ReSharperPlugin.ReactiveUIAnalyzer.Tests
 {
-  [ZoneDefinition]
-  public interface IReactiveUIAnalyzerTestZone : ITestsEnvZone, IRequire<PsiFeatureTestZone>
-  {
-  }
+    [ZoneDefinition]
+    public interface IReactiveUIAnalyzerTestZone : ITestsEnvZone, IRequire<PsiFeatureTestZone>
+    {
+    }
 
-  [SetUpFixture]
-  public class TestEnvironment : ExtensionTestEnvironmentAssembly<IReactiveUIAnalyzerTestZone>
-  {
-  }
+    [SetUpFixture]
+    public class TestEnvironment : ExtensionTestEnvironmentAssembly<IReactiveUIAnalyzerTestZone>
+    {
+    }
 }
